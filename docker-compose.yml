@@ -1,0 +1,37 @@
+services:
+  boltz-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: boltz:cpu
+    environment:
+      - BOLTZ_CACHE=/cache
+      # Optional MSA server auth (boltz reads these env vars)
+      - BOLTZ_MSA_USERNAME=${BOLTZ_MSA_USERNAME-}
+      - BOLTZ_MSA_PASSWORD=${BOLTZ_MSA_PASSWORD-}
+      - MSA_API_KEY_VALUE=${MSA_API_KEY_VALUE-}
+    volumes:
+      - ./examples:/data:ro
+      - ./out:/out
+      - ./cache:/cache
+    # Example command; override as needed
+    command: ["predict", "/data/prot.yaml", "--out_dir", "/out", "--accelerator", "cpu"]
+
+  boltz-gpu:
+    profiles: ["gpu"]
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    image: boltz:gpu
+    environment:
+      - BOLTZ_CACHE=/cache
+      - BOLTZ_MSA_USERNAME=${BOLTZ_MSA_USERNAME-}
+      - BOLTZ_MSA_PASSWORD=${BOLTZ_MSA_PASSWORD-}
+      - MSA_API_KEY_VALUE=${MSA_API_KEY_VALUE-}
+    volumes:
+      - ./examples:/data:ro
+      - ./out:/out
+      - ./cache:/cache
+    # Requires Docker + NVIDIA Container Toolkit, run with: docker compose --profile gpu up
+    gpus: all
+    command: ["predict", "/data/prot.yaml", "--out_dir", "/out", "--accelerator", "gpu"]

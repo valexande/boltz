@@ -47,6 +47,39 @@ boltz predict input_path --use_msa_server
 
 `input_path` should point to a YAML file, or a directory of YAML files for batched processing, describing the biomolecules you want to model and the properties you want to predict (e.g. affinity). To see all available options: `boltz predict --help` and for more information on these input formats, see our [prediction instructions](docs/prediction.md). By default, the `boltz` command will run the latest version of the model.
 
+## Docker
+
+This repo ships with a CPU Docker image (`Dockerfile`) and an optional GPU image (`Dockerfile.gpu`).
+
+### CPU (Docker Compose)
+
+```
+docker compose up --build boltz-cpu
+```
+
+Outputs will be written to `./out` and model/cache files will persist in `./cache` (mapped to `BOLTZ_CACHE=/cache` inside the container).
+
+### GPU (Docker Compose)
+
+Prereqs: Docker with NVIDIA Container Toolkit installed.
+
+```
+docker compose --profile gpu up --build boltz-gpu
+```
+
+### Running a custom input
+
+Mount your own inputs and choose an output directory:
+
+```
+docker run --rm -it \
+  -e BOLTZ_CACHE=/cache \
+  -v "$PWD/cache:/cache" \
+  -v "$PWD/my_inputs:/data:ro" \
+  -v "$PWD/out:/out" \
+  boltz:cpu predict /data/input.yaml --out_dir /out --accelerator cpu
+```
+
 
 ### Binding Affinity Prediction
 There are two main predictions in the affinity output: `affinity_pred_value` and `affinity_probability_binary`. They are trained on largely different datasets, with different supervisions, and should be used in different contexts. The `affinity_probability_binary` field should be used to detect binders from decoys, for example in a hit-discovery stage. Its value ranges from 0 to 1 and represents the predicted probability that the ligand is a binder. The `affinity_pred_value` aims to measure the specific affinity of different binders and how this changes with small modifications of the molecule. This should be used in ligand optimization stages such as hit-to-lead and lead-optimization. It reports a binding affinity value as `log10(IC50)`, derived from an `IC50` measured in `μM`. More details on how to run affinity predictions and parse the output can be found in our [prediction instructions](docs/prediction.md).
