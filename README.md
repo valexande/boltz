@@ -51,6 +51,14 @@ boltz predict input_path --use_msa_server
 
 This repo ships with a CPU Docker image (`Dockerfile`) and an optional GPU image (`Dockerfile.gpu`).
 
+### RunPod Serverless worker (GPU)
+
+This repo also ships a RunPod-ready worker image that runs `handler.py` as the container command.
+
+```bash
+docker build --platform linux/amd64 -f Dockerfile.runpod -t yourname/boltz-runpod:latest .
+```
+
 ### CPU (Docker Compose)
 
 ```
